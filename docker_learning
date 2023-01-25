@@ -1,0 +1,145 @@
+For installation of Docker refer to - https://docs.docker.com/engine/install
+
+
+docker version   --> to get version of installed docker
+
+docker run <image>	-->download image and run a container from an image and exits immidiately, docker ps will not show this container and docker ps -a will show this as exited container because a container only lives as long as the process inside it is alive
+
+docker run -d --name webapp nginx:1.14-alpine  --> give custom name
+
+
+to run a container even without a process being run inside run use -
+docker run ubuntu sleep 5  --> ubuntu does not contain any running process/application by default
+
+appned a command to docker run
+docker run ubuntu cat /etc/*release*
+
+docker ps			--> list all running containers details
+
+docker ps -a			--> list all running/stopped containers details
+
+docker stop <container-name or id>	--> container name we can get from using docker ps command
+
+docker rm <container-name or id>	--> to remove a stopped container permanently
+
+docker images	--> to list all the images presented on host
+
+docker rmi <image-name or id>	--> remove image from host(make sure no containers are running from that image, stop and delete all the dependent containers)
+
+docker pull --> to just download image (does not run a container of that image)
+
+to execute a command on running container, example to see content of a file in running ubuntu container
+
+docker exec <container-id or name> cat /etc/hosts
+
+run attach and detach
+
+docker run <container-name>
+normal run command runs container in foreground i.e. in attached mode. we will be attached to a console and see the output of application/process on screen. we will not be do anything on this console other than view output untill container stops
+press ctrl+c to stop container and application hosted on the container
+
+docker run -d <container-name>   to run a container in detach mode, it will run the docker container in background mode and you will be back to prompt immidiately
+
+to attach later while running use -
+docker attach <container-id or name>
+
+=====================================================
+
+docker run redis --> this will pull latest version on redis available
+
+docker run redis:4.0  --> this will pull specific TAG version
+
+by default docker container does not listen to standard input, it does not have a terminal to read input. it runs in a non interactive mode. if you would like to provide your input, you must map standard input of your host to to docker container using "-i" command
+
+docker run -i <application which takes input>
+
+"t" option is to attach container terminal(psuedo terminal)
+
+docker run -it <application which takes input>
+
+port mapping - application running inside a container gets a port which can only be accessible inside docker container. to access through host's web browser we must map a free port of host to application port on which application is running inside container
+
+docker run -p 80:5000 <application-id> --> all traffic coming to port 80 of host will be routed to port 5000 of docker container
+
+
+once you run a container using plain docker run command and afer your work is done, you remove a container, all the data inside it will be thrown away
+
+if you need to persist data, you need to map a directory outside container on docker host to directory inside a container
+ex-  when we run a mysql container, all the data files are stored in /var/lib/mysql directory, using -
+
+docker run -v /opt/datadir:/var/lib/mysql mysql
+
+
+to get additional details of docker container use-
+
+docker inspect <container-name or id>  --> it return all the details in json format
+
+how to get container logs, launched in background(detached mode)
+docker logs <container-name or id>
+
+=========================================================
+creating docker image - it might be the case that you cannot find the image of your need at docker hub, the you need to create your own image.
+every new image will be created using old image available. Every dockerfile starts with FROM <OS-name>
+When Docker builds the images, it builds these in a layered architecture.
+Each line of instruction creates a new layer in the Docker image with just the changes from the previous layer.
+All the layers/steps built are cached by Docker.It will reuse the previous layers from cache and continue to build the remaining layers.
+first create a docker file file by listing all the required step in a specific order(installation of softwares) then use -
+
+docker build . -f dockerfile -t <tag-name for image>
+this will create image on your local file system, to make it public on docker hub use -
+docker push <tag-name of image created>
+
+============================================================
+passing a environment variable to an app -
+
+docker run -e APP_COLOR=blue <app_image>
+
+docker inspect <container-id or name> --> Config section of json will show all the environment variables in a running container
+===========================================================
+
+CMD ["bash"]   --> dockerfile must contain CMD at last , means it runs bash command here(in ubuntu image docker file).
+bash is shell which listens for input from terminal, if it cannot find a terminal it exits. docker launches an ubuntu container and launch bash program
+by default, docker does not attach a terminal to container when it is run. hence bash program exits and "docker ps -a" shows this container in exited state
+
+CMD sleep 5   --> it tells which command to run when container is launched. if you wan to make an image to sleep to 10 seconds instead of 5 then
+you need to run -
+docker run ubuntu-sleeper sleep 10   --> so the command line parameter passed will get replaced entirely
+-------------------------------------
+ENTRYPOINT ["sleep"]   --> entrypoint instruction is like a command instruction. it specify the command/program that will be run when container starts
+what ever is passed to this image as parameter will be appended to entrypoint command.
+i.e.
+docker run ubuntu-sleeper 10   --> it will run "sleep 10" when container is launched
+
+if you run "docker run ubuntu-sleeper" to an image having ENTRYPOINT ["sleep"] , then it will throw an error
+
+to over come error, you need to combine both ENTRYPOINT + CMD
+i.e.
+
+FROM ubuntu
+ENTRYPOINT ["sleep"]
+CMD["5"]
+
+If we need to override ENTRYPOINT instruction at runtime then use-
+docker run --entrypoint sleep2.0 ubuntu-sleeper 10
+
+=================================================================================================================
+
+Docker compose is used when we are hosting a complex application running multiple services.
+with docker compose, we can create a yml file called docker-compose.yml
+
+use "docker-compose up" to bing up entire stack. this is only applicable on running container on single host.
+
+"--link redis:redis" is command line option to link 2 containers together. first redis is name of container and second redis is name of host that app is looking for(came from code)
+
+when we deploy the application with docker-compose.yml file, it will automatically create a network for the containers and
+connect all containers to that network.
+All containers within application will be able to reach each other using service name given in yml file. hence we dont need
+--link section in yml file for docker-compose.yml version 2 and above.
+==========================================================================================
+docker registry - if the containers where the rain.They will rain from the docker registry which are the clouds.
+That's where darker images are stored.
+Its a central repository of all Docker images.
+
+image:nginx  --> it internally maps to image:docker.io/nginx/nginx --> docker.io(docker hub) is registry
+
+"docker login privat-registry.io" command is used to login to private registry
