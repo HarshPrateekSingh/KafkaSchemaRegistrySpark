@@ -1,0 +1,28 @@
+.idea
+datasets/*.csv
+target
+
+#SBT
+target
+project/target
+chk-point-dir
+sbt*
+
+# IntelliJ
+.idea
+.idea_modules
+*.iml
+*.ipr
+*.iws
+.history
+
+# Maven
+log/
+target/
+KafkaAvroSparkStreamingConsumer/target
+KafkAvroProducer/target
+KafkaAvroSchema/target
+
+# Mac
+.DS_Store
+.*.swp
