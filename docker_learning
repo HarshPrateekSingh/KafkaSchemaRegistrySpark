@@ -143,3 +143,101 @@ Its a central repository of all Docker images.
 image:nginx  --> it internally maps to image:docker.io/nginx/nginx --> docker.io(docker hub) is registry
 
 "docker login privat-registry.io" command is used to login to private registry
+==========================================================================================
+ Docker engine as we have learned before is simply referred to a host with Docker installed on it.
+ When you install Docker on a linux host you're actually installing three different components.
+ The Docker demon, The REST API server and the docker CLI.
+
+ The docker demon is a background process that manages Docker objects such as the images containers volumes and networks.
+ The Docker rest API server is the API interface that programs can use to talk to the demon and provide
+ instructions.
+ Docker CLI is nothing but the command line interface that we've been using until now to perform actions such as running a container stopping containers
+ destroying images etc. It uses the rest api to interact with the docker demo.
+
+ Something to note here is that the Dockers CLI need not necessarily be on the same host.
+ It could be on another system like a laptop and can still work with a remote Docker engine.
+ we can use -H option
+ docker -H=remote-docker-engine:2375  run nginx
+
+ Docker uses namespace to isolate workspace process ids network inter process communication mounts and Unix time sharing systems are created in their own namespace thereby providing isolation between containers.
+
+There is no restriction as to how much of a resource a container can use and hence a container may end
+up utilizing all of the resources on the underlying host.
+
+ Docker uses three groups or control groups to restrict the amount of hardware resources allocated to each container.
+
+ docker run --cpus=.5 ubuntu   --> .5 will ensure that the container does not take up more than 50 percent of the host.
+
+ docker run --memory=100m ubuntu
+
+============================================================================
+when you install Docker on a system it creates this folder structure at var/lib/docker you have multiple folders under it called aufs
+containers image volumes etc..
+
+Files in image layer are Read only and files in Container layer are Read/Write.
+
+docker volume creat data_volume   --> creates  data_volume dir in /var/lib/docker/volumes
+docker run -v data_volume:/var/lib/mysql mysql
+we can use mount command as well to map directory on host to container's.
+
+Docker uses storage drivers to enable layered architecture.Creating a writable layer moving files across layers to enable copy and write etc. It's the storage drivers.
+Some of the common storage drivers are AUFS, BTRFS, ZFS, device-mapper, overlay and overlay 2.
+Docker will choose the best stories driver available automatically based on the operating system like
+AUFS is for ubuntu.
+
+docker info  --> it gives details of docker installed on system
+
+You could use the "docker history <image-id>" command to get a list of steps that were followed to create that image.
+
+So if you run the "docker images" command and the size that you see here is actually the total space for each image(including duplicates)
+If you wanted to see the actual space consumption on the desk run the "docker system df" or "docker system df -v" command. this shows you the actual disk usage of Docker so if you just run the "docker system df"
+command it will show you the disk consumption by images containers and local volumes.(excluding duplicates)
+
+"docker network ls"  -->tells number of networks that exist on system.
+When you install Docker it creates three networks automatically bridge, none and host.
+
+Bridge is the default network a container gets attached to.If you would like to associate the container with any other network you specify the network information using the network command line parameter.
+
+docker run ubuntu     --> for bridge, no need to pass anything. its default
+docker run ubuntu --network=none
+docker run ubuntu --network=host
+
+Bridge network is a private internal network created by Docker on the host.
+
+All containers attached to this network by default and they get an internal IP address usually in the range 172.17 series.
+
+The containers can access each other using this internal IP if required.
+
+To access any of these containers from the outside world map the ports of these containers to ports on the docker host.
+
+
+Host network- This takes out any network isolation between the docker host and the docker container.
+Meaning if you were to run a web server on Port 5000 in a web container it is automatically as accessible
+on the same port externally without requiring any port mapping as the web container uses the hosts network.
+This would also mean that unlike before you will now not be able to run multiple web containers on the
+same host on the same port as the ports are now common to all containers in the host.
+
+none network - The containers are not a test to any network and doesn't have any access to the external network or other containers they run in an isolated network.
+
+User Defined network -
+docker network create --driver  bridge --subnet 182.18.0.0/16 custom-isolated-network
+"docker network inspect <network-name>" to get all details of a network
+use "docker inspect <container name or id>" to get all network related details.
+
+All containers in a docker host can resolve each other with the name of the container Docker has a
+built in DNS server that helps the containers to resolve each other using the container name.
+Note that the built in DNS server always runs at address 127.0.0.11.
+
+===================================================================================
+
+Container Orchestration consists of a set of tools and scripts that can help host containers in a production environment.
+
+Typically a container orchestration solution consist of multiple Docker hosts that can host containers
+that way even if one fails application is still accessible.
+
+"docker service create --replicas=100 nodeApp"
+
+three mostly used container orchestration tools are-
+1. Docker Swarm
+2. Google Kubernetes
+3. Apache Mesos
