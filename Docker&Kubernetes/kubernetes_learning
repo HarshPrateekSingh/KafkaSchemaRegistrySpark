@@ -1,0 +1,117 @@
+https://minikube.sigs.k8s.io/docs/start/
+
+after installing minikube and kubectl
+
+check-
+1.add-
+  kubectl get deployment to .bashrc
+2.kubectl get po -A
+3. minikube dashboard
+4. minikube status
+5. kubectl get nodes
+6. minikube kubectl -- create deployment hello-minikube --image=kicbase/echo-server:1.0
+7. kubectl get deployment
+8. minikube kubectl -- expose deployment hello-minikube --type=NodePort --port=8080
+9. minikube service hello-minikube --url
+-------------------------------------------------------------------------------------------------------
+POD is very basic and smallest unit in k8s. kubernetes does not deploy containers directly
+on the worker nodes. The containers are encapsulated into a Kubernetes object known as PODs.
+A POD is a single instance of an application. A POD is the smallest object, that you can create in kubernetes.
+Kubectl -  The kube control tool is used to deploy and manage applications on a kubernetes
+cluster, to get cluster information, get the status of nodes in the cluster and many other things.
+The kubectl run command is used to deploy an application on the cluster. The kubectl cluster-info command is used to
+view information about the cluster and the kubectl get pod command is used to list all the nodes part of the cluster.
+
+Ideally there should be only one to one mapping between pod and container, means a pod should only contain a single
+container. we can also create 2 containers inside one pod and 1 container on 2 pods if needed.
+
+kubectl run --help
+
+kubectl run my-nginx –-image nginx  --> pulls image from docker hub and run container in pod
+
+kubectl run nginx –-image nginx --dry-run=client -o yaml   --> gives output od commands in yaml format
+
+kubectl describe pod my-nginx
+
+kubectl get pods   --> list of pods available in our cluster
+
+kubectl get pods -o wide  --> to get more details like which node pod is running
+
+kubectl delete pod <pod-name>  --> deleting pod
+
+--------------------------------------------------------------------------------------------------
+YAML in K8S-
+root level properties-
+apiVersion:
+kind:
+metadata:
+
+spec:
+
+---------------------------------------------------------------------------------------------------
+
+kubectl create -f pod-definition.yml  --> to create a pod using yaml file, you can use "apply" command
+as well instead of create command i.e.
+kubectl apply -f pod.yaml
+===================================================================================================
+Controllers are the brain behind Kubernetes.
+
+They are the processes that monitor Kubernetes objects and respond accordingly.They are the processes that monitor Kubernetes objects and respond accordingly.
+
+Replica set is the new recommended way to set up replication.
+
+kubectl create -f rc-definition.yaml
+
+kubectl get replicationcontroller
+
+kubectl get pods
+
+----------------------------------------------------
+Replica set requires a selector definition.
+
+The selector section helps the replica set identify what pods fall under it.
+It's because replica set can also manage pods that were not created as part of the replica set creation.
+For example, the pods created before the creation of the replica set that match labels specified
+in the selector.
+
+selector is one of the major differences between replication controller and replica set.
+The selector is not a required field in case of a replication controller, but it is still available
+when you skip it, as we did in the previous slide.
+
+kubectl create -f replicaset-definition.yaml
+
+kubectl get replicaset replicaset-definition.yaml
+
+kubectl get pods
+
+to change number of replicas, any one of below 3 commands can be used-
+kubectl replace -f replicaset-definition.yaml   --> to replace/update the replica set
+kubectl scale replicaset <replicaset-label> --replicas=2
+kubectl edit  replicaset <replicaset-label>   --> changes made here will be directly applied on running configuration of replica set
+kubectl set image deployment myapp-deployment nginx=nginx:1.18
+-----------------------------------------------------------------------------------------------------------
+Deployment-
+kubectl create -f deployments.yaml  or   kubectl create -f deployments.yaml --record  --> it will record command in rollout history or in describe annotation
+kubectl get deployments
+kubectl get pods
+kubectl get all      --> shows all objects i.e. deployments, replicaset, pods
+kubectl describe deployment <deployment-name>
+----------------------------------------------------------------------------------------------------------
+Rollout- rolling update is the default deployment strategy.
+kubectl rollout status deployment/myapp-deployment
+kubectl rollout history deployment/myapp-deployment
+
+Apply command to apply the changes.A new rollout is triggered and a new revision of the deployment is created
+kubectl apply -f deployment_v2.yaml
+kubectl rollout undo deployment/myapp-deployment
+
+
+===========================================================================================================
+Networking
+
+As you know, a pod hosts a container, unlike in the Docker world where an IP address is always assigned to a Docker container.
+In the Kubernetes world, the IP address is assigned to a pod. Each pod in the Kubernetes gets its own internal IP address.
+===========================================================================================================
+SERVICES:
+kubectl create -f service-definition.yaml
+kubectl get services --> same as kubectl get svc
