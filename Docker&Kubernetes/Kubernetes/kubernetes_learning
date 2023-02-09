@@ -90,7 +90,7 @@ kubectl scale replicaset <replicaset-label> --replicas=2
 kubectl edit  replicaset <replicaset-label>   --> changes made here will be directly applied on running configuration of replica set
 kubectl set image deployment myapp-deployment nginx=nginx:1.18
 -----------------------------------------------------------------------------------------------------------
-Deployment-
+Deployment- used to upgrade, downgrade, rolling update for pods available in cluster. deployments automatically creates replica sets.
 kubectl create -f deployments.yaml  or   kubectl create -f deployments.yaml --record  --> it will record command in rollout history or in describe annotation
 kubectl get deployments
 kubectl get pods
@@ -112,6 +112,9 @@ Networking
 As you know, a pod hosts a container, unlike in the Docker world where an IP address is always assigned to a Docker container.
 In the Kubernetes world, the IP address is assigned to a pod. Each pod in the Kubernetes gets its own internal IP address.
 ===========================================================================================================
-SERVICES:
+SERVICES: if no type in mentioned in "type" under "spec" then its internal kubernetes service.
+for external connection to a pod, we need to mention as "NodePort"
+for connection to cluster of same label pods we use "clusterIP"
 kubectl create -f service-definition.yaml
-kubectl get services --> same as kubectl get svc
+kubectl get services --> same as "kubectl get svc"
+
